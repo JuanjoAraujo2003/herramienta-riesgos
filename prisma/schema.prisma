@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Representa las filas de tu "Riesgo Tecnológico" y "Riesgo No Tecnológico"
+model Risk {
+  id                  String   @id @default(uuid())
+  area                String
+  process             String
+  finality            String
+  riskEvent           String
+  assetType           String?  // Nulo para Riesgos No Tecnológicos
+  threat              String
+  vulnerability       String
+  
+  // Evaluación Inherente (Tus valores numéricos 1 al 5)
+  impactValue         Int
+  probabilityValue    Int
+  inherentRiskScore   Int      // impactValue * probabilityValue
+  inherentRiskLevel   String   // "Alto", "Medio", "Bajo"
+  
+  // Controles
+  controlType         String
+  automationLevel     String
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Rat {
+  id                    String   @id @default(uuid())
+  projectName           String
+  department            String
+  finality              String
+  legalBase             String
+  titularCategories     String
+  dataCategories        String
+  conservationPeriod    String
+  isGranEscala          Boolean  @default(false)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model DataFlow {
+  id                 String   @id @default(uuid())
+  phase              String   // Obtención, Almacenamiento, Uso, etc.
+  description        String
+  technologies       String
+  personalData       String
+  involvedParties    String
+  legalBase          String
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Dpia {
+  id                  String   @id @default(uuid())
+  finality            String
+  legalBase           String
+  titularCategories   String
+  dataCategories      String
+  
+  // Factores Numéricos
+  ctScore             Float    // Análisis de Contexto
+  ciScore             Float    // Análisis de Impacto (Confidencialidad, Integridad...)
+  gravityScore        Float    // Gravedad Total (G)
+  gravityLevel        String   // BAJO, MEDIO, ALTO, MUY ALTO
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+}
