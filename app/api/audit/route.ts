@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'; // ESTA ES LA NUEVA LEY
+
+
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
