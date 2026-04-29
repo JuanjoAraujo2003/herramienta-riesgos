@@ -1,12 +1,10 @@
-export { default } from "next-auth/middleware";
+import { withAuth } from "next-auth/middleware";
+
+// Le entregamos al compilador la función exacta que exige
+export default withAuth;
 
 export const config = {
-  // Estas son las rutas protegidas. Si alguien intenta entrar aquí, será expulsado al Login.
   matcher: [
-    "/",
-    "/dashboard",
-    "/rat-module",
-    "/data-flow",
-    "/dpia"
+    "/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)",
   ]
 };
