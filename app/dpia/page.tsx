@@ -4,11 +4,15 @@ import { useEffect, useState } from 'react';
 import DpiaForm from '../components/DpiaForm';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, Gavel, AlertTriangle } from 'lucide-react';
+import { getSession } from 'next-auth/react'; // Detección de sesión
 
 export default function DpiaModule() {
   const [dpias, setDpias] = useState<any[]>([]);
   const [editingDpia, setEditingDpia] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ESTADO DE JERARQUÍA
+  const [userRole, setUserRole] = useState<string>('ANALYST');
 
   const fetchDpias = async () => {
     const res = await fetch('/api/dpia');
@@ -16,7 +20,15 @@ export default function DpiaModule() {
     setDpias(data);
   };
 
-  useEffect(() => { fetchDpias(); }, []);
+  useEffect(() => { 
+    fetchDpias(); 
+    // Identificación Absoluta
+    getSession().then(session => {
+      if (session?.user) {
+        setUserRole((session.user as any).role || 'ANALYST');
+      }
+    });
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("¿Erradicar este dictamen?")) return;
@@ -92,10 +104,13 @@ export default function DpiaModule() {
                       </span>
                     </td>
                     <td className="p-5 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEditDpia(dpia)} className="p-2 text-indigo-600 hover:bg-indigo-100 rounded transition"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(dpia.id)} className="p-2 text-red-600 hover:bg-red-100 rounded transition"><Trash2 size={18} /></button>
-                      </div>
+                      {/* SOLO EL EMPERADOR VE ESTOS BOTONES */}
+                      {userRole === 'ADMIN' && (
+                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => openEditDpia(dpia)} className="p-2 text-indigo-600 hover:bg-indigo-100 rounded transition"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(dpia.id)} className="p-2 text-red-600 hover:bg-red-100 rounded transition"><Trash2 size={18} /></button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

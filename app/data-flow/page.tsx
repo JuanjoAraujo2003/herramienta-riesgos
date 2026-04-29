@@ -3,12 +3,16 @@
 import { useEffect, useState } from 'react';
 import DataFlowForm from '../components/DataFlowForm';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Database, Network, Server } from 'lucide-react';
+import { Plus, Edit2, Trash2, Network } from 'lucide-react';
+import { getSession } from 'next-auth/react'; // Detección de sesión
 
 export default function DataFlowModule() {
   const [flows, setFlows] = useState<any[]>([]);
   const [editingFlow, setEditingFlow] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ESTADO DE JERARQUÍA
+  const [userRole, setUserRole] = useState<string>('ANALYST');
 
   const fetchFlows = async () => {
     const res = await fetch('/api/data-flow');
@@ -16,7 +20,15 @@ export default function DataFlowModule() {
     setFlows(data);
   };
 
-  useEffect(() => { fetchFlows(); }, []);
+  useEffect(() => { 
+    fetchFlows(); 
+    // Identificación Absoluta
+    getSession().then(session => {
+      if (session?.user) {
+        setUserRole((session.user as any).role || 'ANALYST');
+      }
+    });
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("¿Erradicar esta fase del flujo?")) return;
@@ -72,10 +84,13 @@ export default function DataFlowModule() {
                     <td className="p-5"><span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-md text-xs font-bold">{flow.technologies}</span></td>
                     <td className="p-5 text-sm font-medium text-gray-600">{flow.legalBase}</td>
                     <td className="p-5 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEditFlow(flow)} className="p-2 text-indigo-600 hover:bg-indigo-100 rounded transition"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(flow.id)} className="p-2 text-red-600 hover:bg-red-100 rounded transition"><Trash2 size={18} /></button>
-                      </div>
+                      {/* SOLO EL EMPERADOR VE ESTOS BOTONES */}
+                      {userRole === 'ADMIN' && (
+                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => openEditFlow(flow)} className="p-2 text-indigo-600 hover:bg-indigo-100 rounded transition"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(flow.id)} className="p-2 text-red-600 hover:bg-red-100 rounded transition"><Trash2 size={18} /></button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

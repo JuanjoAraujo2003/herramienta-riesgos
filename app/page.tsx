@@ -5,6 +5,7 @@ import RiskForm from './components/RiskForm';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, ShieldAlert, TrendingUp, Activity, Search, Filter, Download } from 'lucide-react';
 import ActionPlanPanel from './components/ActionPlanPanel';
+import { getSession } from 'next-auth/react'; // NUEVA ARMA
 
 export default function Home() {
   const [risks, setRisks] = useState<any[]>([]);
@@ -15,13 +16,24 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('Todos');
 
+  // ESTADO DE JERARQUÍA
+  const [userRole, setUserRole] = useState<string>('ANALYST');
+
   const fetchRisks = async () => {
     const res = await fetch('/api/risks');
     const data = await res.json();
     setRisks(data);
   };
 
-  useEffect(() => { fetchRisks(); }, []);
+  useEffect(() => { 
+    fetchRisks(); 
+    // Identificación Absoluta
+    getSession().then(session => {
+      if (session?.user) {
+        setUserRole((session.user as any).role || 'ANALYST');
+      }
+    });
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("¿Ordenas erradicar este riesgo de forma permanente?")) return;
@@ -189,10 +201,13 @@ export default function Home() {
                       </span>
                     </td>
                     <td className="p-5 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEditRisk(risk)} className="p-2 text-indigo-600 hover:bg-indigo-100 rounded transition" title="Editar"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(risk.id)} className="p-2 text-red-600 hover:bg-red-100 rounded transition" title="Eliminar"><Trash2 size={18} /></button>
-                      </div>
+                      {/* SOLO EL EMPERADOR VE ESTOS BOTONES */}
+                      {userRole === 'ADMIN' && (
+                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => openEditRisk(risk)} className="p-2 text-indigo-600 hover:bg-indigo-100 rounded transition" title="Editar"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(risk.id)} className="p-2 text-red-600 hover:bg-red-100 rounded transition" title="Eliminar"><Trash2 size={18} /></button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -1,11 +1,11 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credenciales",
@@ -23,20 +23,33 @@ const handler = NextAuth({
         if (!user) return null;
 
         const passwordsMatch = await bcrypt.compare(credentials.password, user.password);
-        
         if (!passwordsMatch) return null;
 
-        return { id: user.id, email: user.email, name: user.name };
+        // Retornamos el usuario incluyendo su rol
+        return { id: user.id, email: user.email, name: user.name, role: user.role } as any;
       }
     })
   ],
-  session: {
-    strategy: "jwt",
+  callbacks: {
+    // Inyectamos el rol en el Token
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = (user as any).role;
+      }
+      return token;
+    },
+    // Pasamos el rol del Token a la Sesión visible
+    async session({ session, token }) {
+      if (session?.user) {
+        (session.user as any).role = token.role;
+      }
+      return session;
+    }
   },
-  pages: {
-    signIn: '/login', // Le diremos que use nuestra propia página de diseño
-  },
+  session: { strategy: "jwt" },
+  pages: { signIn: '/login' },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
 
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

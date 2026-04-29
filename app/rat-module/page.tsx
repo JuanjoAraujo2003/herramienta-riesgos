@@ -4,11 +4,15 @@ import { useEffect, useState } from 'react';
 import RatForm from '../components/RatForm';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, FolderOpen, Scale, FileText } from 'lucide-react';
+import { getSession } from 'next-auth/react'; // NUEVA ARMA: Detección de sesión
 
 export default function RatModule() {
   const [rats, setRats] = useState<any[]>([]);
   const [editingRat, setEditingRat] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ESTADO DE JERARQUÍA
+  const [userRole, setUserRole] = useState<string>('ANALYST');
 
   const fetchRats = async () => {
     const res = await fetch('/api/rat');
@@ -16,7 +20,15 @@ export default function RatModule() {
     setRats(data);
   };
 
-  useEffect(() => { fetchRats(); }, []);
+  useEffect(() => { 
+    fetchRats(); 
+    // Identificación Absoluta al cargar el módulo
+    getSession().then(session => {
+      if (session?.user) {
+        setUserRole((session.user as any).role || 'ANALYST');
+      }
+    });
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("¿Seguro que deseas eliminar este registro del RAT?")) return;
@@ -112,14 +124,17 @@ export default function RatModule() {
                       )}
                     </td>
                     <td className="p-5 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEditRat(rat)} className="p-2 text-indigo-600 hover:bg-indigo-100 rounded transition" title="Editar">
-                          <Edit2 size={18} />
-                        </button>
-                        <button onClick={() => handleDelete(rat.id)} className="p-2 text-red-600 hover:bg-red-100 rounded transition" title="Eliminar">
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
+                      {/* SOLO EL EMPERADOR VE ESTOS BOTONES */}
+                      {userRole === 'ADMIN' && (
+                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => openEditRat(rat)} className="p-2 text-indigo-600 hover:bg-indigo-100 rounded transition" title="Editar">
+                            <Edit2 size={18} />
+                          </button>
+                          <button onClick={() => handleDelete(rat.id)} className="p-2 text-red-600 hover:bg-red-100 rounded transition" title="Eliminar">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

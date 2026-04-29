@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "./components/Sidebar"; // Invocamos nuestras nuevas tropas
+import Providers from "./components/Providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,13 +20,14 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.className} bg-gray-100 flex min-h-screen`}>
         
-        {/* El Panel Lateral ahora es inteligente y obedece rutas */}
-        <Sidebar />
+        {/* Envolvemos todo el imperio con el Provider */}
+        <Providers>
+          <Sidebar />
+          <div className="flex-1 overflow-y-auto">
+            {children}
+          </div>
+        </Providers>
 
-        {/* Contenido Principal */}
-        <div className="flex-1 overflow-y-auto">
-          {children}
-        </div>
       </body>
     </html>
   );
