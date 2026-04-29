@@ -12,7 +12,7 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-indigo-950 text-white flex flex-col min-h-screen">
       <div className="p-6 text-2xl font-black tracking-wider border-b border-indigo-800">
-        SIR-CORE
+        Herramienta Riesgos DSG
       </div>
       <nav className="flex-1 p-4 space-y-2">
         <Link href="/dashboard" className="block p-3 rounded hover:bg-indigo-800 transition font-medium">
@@ -29,6 +29,9 @@ export default function Sidebar() {
         </Link>
         <Link href="/dpia" className="block p-3 rounded hover:bg-indigo-800 transition font-medium">
           ⚖️ Evaluación de Impacto
+        </Link>
+        <Link href="/audit" className="block p-3 rounded hover:bg-indigo-800 transition font-medium text-emerald-400">
+          👁️‍🗨️ Registro de Auditoría
         </Link>
       </nav>
       

@@ -29,6 +29,7 @@ model Risk {
   controlType         String
   automationLevel     String
   
+  actionPlans         ActionPlan[]
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
@@ -85,4 +86,32 @@ model User {
   name      String?
   role      String   @default("ADMIN")
   createdAt DateTime @default(now())
+}
+
+// MODELO DE MITIGACIÓN (Planes de Acción)
+model ActionPlan {
+  id              String   @id @default(uuid())
+  riskId          String
+  risk            Risk     @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  
+  task            String   // La tarea a realizar
+  responsible     String   // Quién debe cumplirla
+  status          String   @default("Pendiente") // Pendiente, En Progreso, Completado
+  progress        Int      @default(0) // Porcentaje de 0 a 100
+  dueDate         DateTime? // Fecha límite
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// MODELO DE VIGILANCIA ABSOLUTA (Logs de Auditoría)
+model AuditLog {
+  id          String   @id @default(uuid())
+  userEmail   String   // Quién ejecutó la orden
+  action      String   // CREAR, EDITAR, ELIMINAR
+  entity      String   // RIESGO, RAT, DPIA, FLUJO
+  entityId    String   // ID del elemento afectado
+  details     String?  // Detalles adicionales
+
+  createdAt   DateTime @default(now())
 }
